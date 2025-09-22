@@ -149,10 +149,10 @@ per_game_table <- df_probs %>%
 
 per_game_table <- per_game_table %>%
   dplyr::select(
-    round, game_id, home_team, away_team, y_true, true_outcome,
+    round, game_id, home_team, away_team, true_outcome,
     `p_home_Spike–Slab`, `p_away_Spike–Slab`,
     p_home_Glickman, p_away_Glickman
   )
 
 
-print(per_game_table, n = Inf)
+print(per_game_table[44:84,], n = Inf)

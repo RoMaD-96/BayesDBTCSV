@@ -10,7 +10,7 @@ library(cmdstanr)
 #   ____________________________________________________________________________
 #   Data                                                                    ####
 
-load("~/Desktop/Weighted_BTD/Data/pred_scenarios.RData")
+load("Data/pred_scenarios.RData")
 
 
 #   ____________________________________________________________________________
@@ -46,8 +46,8 @@ prepare_stan_data <- function(data,
     ind_home = as.integer(ind_home),
     mean_home = mean_home,
     sd_home = sd_home,
-    s_prior_shape = 2,
-    s_prior_rate = 1,
+    s_prior_shape = 0.1,
+    s_prior_rate = 0.1,
     #spike and slab commensurate
     p_spike = 0.05,
     mu_slab = 0,
@@ -127,9 +127,9 @@ fit_scenario <- function(scenario, model_type = "glick") {
 #   ____________________________________________________________________________
 #   Running models                                                          ####
 
-model_glick <- cmdstan_model("~/Desktop/Weighted_BTD/glickman_2001.stan")
+model_glick <- cmdstan_model("~/Desktop/Work/Projects/BayesDBTCSV/glickman_2001.stan")
+model_wbt_spike_slab <- cmdstan_model("~/Desktop/Work/Projects/BayesDBTCSV/wbt_spike_slab.stan")
 
-model_wbt_spike_slab <- cmdstan_model("~/Desktop/Weighted_BTD/wbt_spike_slab.stan")
 
 
 

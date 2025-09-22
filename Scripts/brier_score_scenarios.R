@@ -41,7 +41,7 @@ compute_brier_score <- function(result) {
   }
 
   # 7) Calculate Brier score
-  brier_per_obs <- (p_hat - y_oos)^2
+  brier_per_obs <- (p_hat - y_oos)^2 + ((1-p_hat) - (1-y_oos))^2
   brier_score <- mean(brier_per_obs)
 
   return(brier_score)
