@@ -40,9 +40,9 @@ str(stan_data)
 #   ____________________________________________________________________________
 #   Model fit                                                               ####
 
-model_glick <- cmdstan_model("~/Desktop/Work/Projects/BayesDBTCSV/glickman_2001.stan")
-model_wbt_spike_slab <- cmdstan_model("~/Desktop/Work/Projects/BayesDBTCSV/wbt_spike_slab.stan")
-model_const_var <- cmdstan_model("~/Desktop/Work/Projects/BayesDBTCSV/glickman_1999.stan")
+model_glick <- cmdstan_model("Stan/glickman_2001.stan")
+model_wbt_spike_slab <- cmdstan_model("Stan/wbt_spike_slab.stan")
+model_const_var <- cmdstan_model("Stan/glickman_1999.stan")
 
 
 fit_glick <- model_glick$sample(

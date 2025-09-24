@@ -19,7 +19,6 @@ source("Scripts/pred_models.R")
 #   ____________________________________________________________________________
 #   Outcome Probability Table                                               ####
 
-
 probs_glick <- extract_match_probs(results_glick, "Glickman")
 probs_spike <- extract_match_probs(results_spike_slab, "Spike–Slab")
 probs_const_var <- extract_match_probs(results_const_var, "Const_Var")
