@@ -23,8 +23,8 @@ data {
 parameters {
     matrix[ntimes_rank, nteams] logStrength_raw;     // Log strength parameters for each team over time
     real home;                  // Home team effect parameter
-    real<lower=0> inv_tau2;   // Prior SD for initial log(σ²)
-    real<lower=0> inv_omega2;
+    real<lower=0> tau2;   // Prior SD for initial log(σ²)
+    real<lower=0> omega2;
     // Stochastic variance parameters (following Glickman's formulation)
     matrix[ntimes_rank, nteams] log_sigma2;  // Log of variance parameters
 }
@@ -33,8 +33,8 @@ transformed parameters {
     real adj_h_eff;
     matrix[ntimes_rank, nteams] logStrength;
     matrix[ntimes_rank, nteams] sigma = sqrt(exp(log_sigma2));          // sd parameters (σ)
-    real<lower=0> tau = inv(sqrt(inv_tau2));   // Prior SD for initial log(σ²)
-    real<lower=0> omega = inv(sqrt(inv_omega2));
+    real<lower=0> tau = sqrt(tau2);   // Prior SD for initial log(σ²)
+    real<lower=0> omega = sqrt(omega2);
 
     // Sum-to-zero constraint for log-strength parameters
     logStrength[1] = logStrength_raw[1] - mean(logStrength_raw[1]);
@@ -51,8 +51,8 @@ model {
     target += normal_lpdf(home | mean_home, sd_home);
 
     // Prior for global stochastic variance parameter
-    target += gamma_lpdf(inv_tau2 | s_prior_shape, s_prior_rate);
-    target += gamma_lpdf(inv_omega2 | s_prior_shape, s_prior_rate);
+    target += inv_gamma_lpdf(tau2 | s_prior_shape, s_prior_rate);
+    target += inv_gamma_lpdf(omega2 | s_prior_shape, s_prior_rate);
 
     // Priors for initial log(σ²) - Glickman's equation (4) equivalent
     for (k in 1:nteams) {

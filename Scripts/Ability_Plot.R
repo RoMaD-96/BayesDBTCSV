@@ -81,7 +81,7 @@ logo_paths <- sapply(names(logo_urls), function(team) {
 })
 
 #   ____________________________________________________________________________
-#   Models                                                                  ####
+#   Plots                                                                   ####
 
 # Glickman model
 draws_glick <- fit_glick$draws(variables = "logStrength", format = "draws_df")
@@ -132,20 +132,19 @@ p_all_logos <- ggplot(
   ) +
   labs(
     x = "Season",
-    y = "LogStrength (posterior median ± 95% CI)"
+    y = "Log-strength values"
   ) +
   theme_bw(base_size = 11) +
   theme(
     strip.placement = "outside",
-    strip.text.x = element_text(size = 18),
-    strip.text.y = element_text(size = 18),
-    legend.position = "top",
-    axis.text.y = element_text(size = 15),
-    axis.title.y = element_text(size = 22),
-    axis.title.x = element_text(size = 22),
-    legend.title = element_blank(),
-    legend.text = element_text(size = 18),
-    axis.text.x = element_text(size = 10, angle = 30, hjust = 0.5, vjust = 1),
+    strip.text.x = element_text(size = 17),
+    strip.text.y = element_text(size = 17),
+    axis.text.y = element_text(size = 14),
+    axis.title.y = element_text(size = 19),
+    axis.title.x = element_text(size = 19),
+    legend.title = element_blank(),  # Changed from element_blank() to show "Density"
+    legend.text = element_text(size = 17),
+    axis.text.x = element_text(size = 10, angle = 30, hjust = 0.5, vjust = 0.7),
     strip.background = element_rect(fill = "grey95")
   )
 

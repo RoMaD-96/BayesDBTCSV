@@ -10,7 +10,7 @@ library(cmdstanr)
 #   ____________________________________________________________________________
 #   Functions                                                               ####
 
-source("Scripts/Functions.R")
+source("Scripts/functions.R")
 
 #   ____________________________________________________________________________
 #   Data                                                                    ####
@@ -30,8 +30,8 @@ stan_data <- prepare_stan_data(nba_data,
   mu_spike = 100,
   sd_slab = 5,
   sd_spike = 0.1,
-  s_prior_shape = 0.1,
-  s_prior_rate = 0.1
+  s_prior_shape = 1,
+  s_prior_rate = 1
 )
 str(stan_data)
 
@@ -42,6 +42,7 @@ str(stan_data)
 
 model_glick <- cmdstan_model("~/Desktop/Work/Projects/BayesDBTCSV/glickman_2001.stan")
 model_wbt_spike_slab <- cmdstan_model("~/Desktop/Work/Projects/BayesDBTCSV/wbt_spike_slab.stan")
+model_const_var <- cmdstan_model("~/Desktop/Work/Projects/BayesDBTCSV/glickman_1999.stan")
 
 
 fit_glick <- model_glick$sample(
@@ -52,6 +53,16 @@ fit_glick <- model_glick$sample(
   iter_warmup = 1000,
   iter_sampling = 1000
 )
+
+fit_const_var <- model_const_var$sample(
+  data = stan_data,
+  seed = 433,
+  chains = 4,
+  parallel_chains = 4,
+  iter_warmup = 1000,
+  iter_sampling = 1000
+)
+
 
 fit_wbt_spike_slab <- model_wbt_spike_slab$sample(
   data = stan_data,
