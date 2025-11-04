@@ -73,9 +73,18 @@ fit_wbt_spike_slab <- model_wbt_spike_slab$sample(
   iter_sampling = 1000
 )
 
-# loo_glick <- fit_glick$loo()
-# loo_wbt_spike_slab <- fit_wbt_spike_slab$loo()
-#
+loo_wbt <- fit_wbt_spike_slab$loo()
+loo_wbt$p_loo
+
+loo_glick <- fit_glick$loo()
+loo_glick$p_loo
+
+
+loo_const_var <- fit_const_var$loo()
+loo_const_var$p_loo
+
+loo::loo_compare(loo_const_var,loo_glick,loo_wbt)
+
 # loo::loo_compare(loo_glick, loo_wbt_spike_slab)
 #
 # fit_wbt_spike_slab$summary(variables="sd_logStrength")
