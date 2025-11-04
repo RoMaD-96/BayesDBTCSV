@@ -10,7 +10,7 @@ data {
     array[N_prev] int team1_prev;
     array[N_prev] int team2_prev;
     real mean_logStrength;                // Initial mean for logStrength
-    array[N] int<lower=0, upper=1> y;      // Outcome: 1 if team1 beats team2, 3 if team2 beats team1, 2 for tie
+    array[N] int<lower=0, upper=1> y;      // Outcome
     int<lower=0, upper=1> ind_home;        // Home effect indicator
     real mean_home;              // Mean for home effect
     real<lower=1e-8> sd_home;      // Standard deviation for home effect
@@ -22,8 +22,8 @@ data {
 }
 
     transformed data {
-      real lognc_spike = normal_lccdf(0 | mu_spike, sd_spike); // \Phi(mu_spike / sd_spike)
-      real lognc_slab  = normal_lccdf(0 | mu_slab, sd_slab); // \Phi(mu_slab / sd_slab)
+      real lognc_spike = normal_lccdf(0 | mu_spike, sd_spike);
+      real lognc_slab  = normal_lccdf(0 | mu_slab, sd_slab);
     }
 
 parameters {
@@ -53,7 +53,7 @@ model {
     target += normal_lpdf(home | mean_home, sd_home);
 
 
-    // Stochastic weighted evolution of prec_logStrength
+    // Stochastic weighted evolution using spike and slab
     for (t in 1:ntimes_rank) {
         for (k in 1:nteams) {
           target += log_mix(p_spike, normal_lpdf(prec_logStrength[t, k]|  mu_spike, sd_spike) - lognc_spike,
@@ -61,8 +61,7 @@ model {
         }
     }
 
-    // AR(1) process for strength parameters using stochastic variances
-    // This implements Glickman's equation (2): c^(t+1) ~ N(c^(t), σ²^(t+1))
+    // AR(1) process for strength parameters using spike and slab stochastic variances
     for(k in 1:nteams){
         target+=normal_lpdf(logStrength_raw[1, k] | mean_logStrength, sd_logStrength[1, k]);
     }
@@ -84,17 +83,17 @@ generated quantities {
     array[N] int y_rep;
     array[N_prev] int y_prev;
 
- // Calculate log-likelihood for in-sample data
+ // Log-likelihood for in-sample data
     for (n in 1:N) {
         real logit_p = logStrength[instants_rank[n], team1[n]] + adj_h_eff -
                       logStrength[instants_rank[n], team2[n]];
         log_lik[n] = bernoulli_logit_lpmf(y[n] | logit_p);
 
-        // Generate in-sample replications
+        // In-sample replications
         y_rep[n] = bernoulli_logit_rng(logit_p);
     }
 
-    // Generate out-of-sample predictions
+    // Out-of-sample predictions
     if (N_prev > 0) {
         for (n in 1:N_prev) {
             real logit_p_prev = logStrength[instants_rank_prev[n], team1_prev[n]] + adj_h_eff -
