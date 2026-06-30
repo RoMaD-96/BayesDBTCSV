@@ -48,7 +48,7 @@ model {
     target += normal_lpdf(home | mean_home, sd_home);
 
     // Prior for global variance parameter
-    target += inv_gamma_lpdf(sigma2 | s_prior_shape, s_prior_rate);
+    target += inv_gamma_lpdf(sigma2 | 1, 1);
 
 
     // AR(1) process for strength parameters using constant variance

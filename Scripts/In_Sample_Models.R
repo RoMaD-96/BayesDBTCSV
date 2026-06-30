@@ -10,7 +10,7 @@ library(patchwork)
 #   ____________________________________________________________________________
 #   Models                                                                  ####
 
-source("Scripts/nba_code.R")
+source("Scripts/Fit_Models.R")
 
 
 #   ____________________________________________________________________________
@@ -30,7 +30,7 @@ away_team <- stan_data$team2
 nteams <- stan_data$nteams
 
 
-# Posterior-predictive mean probability per game
+# Posterior predictive mean per game
 p_hat <- colMeans(y_rep_spike_slab)
 
 
@@ -45,10 +45,10 @@ rep_wins_ci <- lapply(1:S, function(s) {
   H[cbind(home_team[rows], seq_len(sum(rows)))] <- 1
   A[cbind(away_team[rows], seq_len(sum(rows)))] <- 1
 
-  # y_rep subset for these games
+  # y_rep for these games
   Y <- y_rep_spike_slab[, rows, drop = FALSE]
-  # team wins per draw: (H %*% y) + (A %*% (1 - y))
-  TW <- H %*% t(Y) + A %*% (1 - t(Y)) # matrix mult; careful with dims
+  # team wins per draw: H %*% y + A %*% (1 - y)
+  TW <- H %*% t(Y) + A %*% (1 - t(Y)) # matrix mult, watch the dims
 
   tibble(
     team = rep(1:nteams, each = 1),
@@ -77,7 +77,7 @@ team_meta <- dplyr::bind_rows(
   )
 ) %>% distinct(team_id, .keep_all = TRUE)
 
-# Vector of labels
+# Team labels aligned to team_ids
 teams_labels <- team_meta$team_label[match(team_ids, team_meta$team_id)]
 teams_abbr <- c(
   "ATL", # Atlanta Hawks
@@ -124,7 +124,7 @@ season_labels <- sapply(0:(S - 1), function(i) {
   sprintf("%02d/%02d", (start_year + i) %% 100, (start_year + i + 1) %% 100)
 })
 
-# Labels
+# Season facet labels
 season_lab_map <- setNames(season_labels, as.character(1:S))
 my_labeller <- labeller(season = as_labeller(function(x) season_lab_map[as.character(x)]))
 
@@ -133,10 +133,10 @@ my_labeller <- labeller(season = as_labeller(function(x) season_lab_map[as.chara
 #   Plots                                                                   ####
 
 
-# Plot 1: Last season with teams sorted by wins
+# Plot 1: last season, teams sorted by wins
 df_last_season <- df_facets %>%
   filter(season == S) %>%
-  arrange(desc(obs)) %>% # Sort by observed wins
+  arrange(desc(obs)) %>% # by observed wins
   mutate(x_sorted = row_number())
 
 p_in_sample_24_25 <- df_last_season %>%
@@ -172,7 +172,7 @@ p_in_sample_24_25 <- df_last_season %>%
     panel.spacing.x = unit(4, "mm")
   )
 
-# Plot 2: Other 9 seasons
+# Plot 2: the other 9 seasons
 df_other_seasons <- df_facets %>%
   filter(season < S) %>%
   arrange(season, team)

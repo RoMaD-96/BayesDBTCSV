@@ -13,7 +13,7 @@ data {
     array[N] int<lower=0, upper=1> y;      // Outcome
     int<lower=0, upper=1> ind_home;        // Home effect indicator
     real mean_home;              // Mean for home effect
-    real<lower=1e-8> sd_home;      // Standard deviation for home effect
+    real<lower=0> sd_home;      // Standard deviation for home effect
     real mu_spike;
     real<lower=0> sd_spike;
     real mu_slab;

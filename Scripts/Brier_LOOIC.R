@@ -11,9 +11,11 @@ library(posterior)
 #   ____________________________________________________________________________
 #   Models                                                                  ####
 
-source("Scripts/pred_models.R")
+source("Scripts/Out_of_Sample_Models.R")
 
-brier_scores_glick      <- lapply(results_glick, compute_brier_score)
+brier_exp_bt <- lapply(results_exp_BT, compute_brier_score)
+
+brier_scores_glick <- lapply(results_glick, compute_brier_score)
 brier_scores_spike_slab <- lapply(results_spike_slab, compute_brier_score)
 brier_scores_const_var <- lapply(results_const_var, compute_brier_score)
 
@@ -22,16 +24,18 @@ brier_scores_const_var <- lapply(results_const_var, compute_brier_score)
 
 # Updated labels with abbreviated names
 pretty_names <- c(
-  "predict_first_round" = "First Round",
-  "first_round"         = "First Round",
-  "predict_semifinals"  = "Conf. Semifinals",
-  "semifinals"          = "Conf. Semifinals",
-  "predict_conf_finals" = "Conf. Finals",
-  "conference_finals"   = "Conf. Finals",
-  "predict_nba_finals"  = "NBA Finals",
-  "nba_finals"          = "NBA Finals"
+  "predict_second_half"  = "Second Half",
+  "second_half"          = "Second Half",
+  "predict_first_round"  = "First Round",
+  "first_round"          = "First Round",
+  "predict_semifinals"   = "Conf. Semifinals",
+  "semifinals"           = "Conf. Semifinals",
+  "predict_conf_finals"  = "Conf. Finals",
+  "conference_finals"    = "Conf. Finals",
+  "predict_nba_finals"   = "NBA Finals",
+  "nba_finals"           = "NBA Finals"
 )
-desired_order <- c("First Round", "Conf. Semifinals", "Conf. Finals", "NBA Finals")
+desired_order <- c("Second Half", "First Round", "Conf. Semifinals", "Conf. Finals", "NBA Finals")
 
 
 # Build data for Brier
@@ -65,14 +69,14 @@ df_looic <-
   bind_rows(
     res_to_df(results_glick, "Glickman"),
     res_to_df(results_const_var, "Const-Var"),
-    res_to_df(results_spike_slab, "Spike–Slab")
+    res_to_df(results_spike_slab, "Spike–Slab"),
   ) %>%
   filter(!is.na(value)) %>%
   mutate(
     scenario_label = dplyr::recode(scenario, !!!pretty_names, .default = scenario)
   ) %>%
   filter(scenario_label %in% desired_order) %>%
-  group_by(method, scenario_label, metric) %>%                  # de-duplicate aliases
+  group_by(method, scenario_label, metric) %>%
   summarise(value = first(value), .groups = "drop")
 
 # Combine metrics
@@ -80,7 +84,7 @@ df_all <-
   bind_rows(df_looic, df_brier) %>%
   mutate(
     scenario_label = factor(scenario_label, levels = desired_order),
-    metric = factor(metric, levels = c("Brier", "LOOIC")) # show Brier first
+    metric = factor(metric, levels = c("Brier", "LOOIC"))
   )
 
 # Ribbon data (gap between methods) per facet
@@ -88,11 +92,12 @@ df_ribbon <-
   df_all %>%
   select(scenario_label, metric, method, value) %>%
   pivot_wider(names_from = method, values_from = value) %>%
-  filter(!is.na(Glickman) & !is.na(`Spike–Slab`)) %>%
+  rowwise() %>%
   mutate(
-    ymin = pmin(Glickman, `Spike–Slab`),
-    ymax = pmax(Glickman, `Spike–Slab`)
-  )
+    ymin = min(c_across(c(Glickman, `Spike–Slab`, `Const-Var`)), na.rm = TRUE),
+    ymax = max(c_across(c(Glickman, `Spike–Slab`, `Const-Var`)), na.rm = TRUE)
+  ) %>%
+  ungroup()
 
 # Label positions
 df_labels <-
@@ -133,19 +138,35 @@ p_facet <-
   ) +
   scale_color_manual(
     name = "Model:",
-    values = c("Spike–Slab" = "#c41010", "Glickman" = "#56B4E9", "Const-Var" = "forestgreen"),
-    breaks = c("Spike–Slab", "Glickman", "Const-Var"),
-    labels = c("Spike–Slab" = "Proposal", "Glickman" = "SIV", "Const-Var" = "CIV")
+    values = c(
+      "Spike–Slab" = "#c41010",
+      "Glickman" = "#56B4E9",
+      "Const-Var" = "forestgreen",
+      "Exp-BT" = "#E69F00"
+    ),
+    breaks = c("Spike–Slab", "Glickman", "Const-Var", "Exp-BT"),
+    labels = c(
+      "Spike–Slab" = "Proposal",
+      "Glickman" = "SIV",
+      "Const-Var" = "CIV",
+      "Exp-BT" = "Exp-BT"
+    )
   ) +
   scale_shape_manual(
     name = "Model:",
     values = c(
       "Spike–Slab" = 19,
       "Glickman" = 17,
-      "Const-Var" = 15
+      "Const-Var" = 15,
+      "Exp-BT" = 18
     ),
-    breaks = c("Spike–Slab", "Glickman", "Const-Var"),
-    labels = c("Spike–Slab" = "Proposal", "Glickman" = "SIV", "Const-Var" = "CIV")
+    breaks = c("Spike–Slab", "Glickman", "Const-Var", "Exp-BT"),
+    labels = c(
+      "Spike–Slab" = "Proposal",
+      "Glickman" = "SIV",
+      "Const-Var" = "CIV",
+      "Exp-BT" = "Exp-BT"
+    )
   ) +
   labs(
     x = "Prediction scenario",

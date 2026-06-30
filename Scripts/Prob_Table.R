@@ -9,12 +9,12 @@ library(posterior)
 #   ____________________________________________________________________________
 #   Data                                                                    ####
 
-load("~/Desktop/Weighted_BTD/Data/pred_scenarios.RData")
+load("Data/pred_scenarios.RData")
 
 #   ____________________________________________________________________________
 #   Model                                                                   ####
 
-source("Scripts/pred_models.R")
+source("Scripts/Out_of_Sample_Models.R")
 
 #   ____________________________________________________________________________
 #   Outcome Probability Table                                               ####

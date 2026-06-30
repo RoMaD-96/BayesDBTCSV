@@ -10,7 +10,7 @@ library(cmdstanr)
 #   ____________________________________________________________________________
 #   Functions                                                               ####
 
-source("Scripts/functions.R")
+source("Scripts/Functions.R")
 
 #   ____________________________________________________________________________
 #   Data                                                                    ####
@@ -19,7 +19,6 @@ load("Data/pred_scenarios.RData")
 
 nba_data <- pred_scenarios$predict_first_round$train_data
 
-
 stan_data <- prepare_stan_data(nba_data,
   mean_logStrength = 0,
   ind_home = 1,
@@ -27,15 +26,13 @@ stan_data <- prepare_stan_data(nba_data,
   sd_home = 10,
   p_spike = 0.05,
   mu_slab = 0,
-  mu_spike = 100,
+  mu_spike = 30,
   sd_slab = 5,
   sd_spike = 0.1,
   s_prior_shape = 1,
   s_prior_rate = 1
 )
 str(stan_data)
-
-
 
 #   ____________________________________________________________________________
 #   Model fit                                                               ####
@@ -73,19 +70,14 @@ fit_wbt_spike_slab <- model_wbt_spike_slab$sample(
   iter_sampling = 1000
 )
 
-loo_wbt <- fit_wbt_spike_slab$loo()
-loo_wbt$p_loo
-
-loo_glick <- fit_glick$loo()
-loo_glick$p_loo
-
-
-loo_const_var <- fit_const_var$loo()
-loo_const_var$p_loo
-
-loo::loo_compare(loo_const_var,loo_glick,loo_wbt)
-
-# loo::loo_compare(loo_glick, loo_wbt_spike_slab)
+# loo_wbt <- fit_wbt_spike_slab$loo()
+# loo_wbt$p_loo
 #
-# fit_wbt_spike_slab$summary(variables="sd_logStrength")
-# fit_glick$summary(variables="sigma")
+# loo_glick <- fit_glick$loo()
+# loo_glick$p_loo
+#
+#
+# loo_const_var <- fit_const_var$loo()
+# loo_const_var$p_loo
+#
+# loo::loo_compare(loo_const_var, loo_glick, loo_wbt)

@@ -11,7 +11,7 @@ library(magick)
 #   ____________________________________________________________________________
 #   Sources                                                                ####
 
-source("Scripts/nba_code.R")
+source("Scripts/Fit_Models.R")
 
 #   ____________________________________________________________________________
 #   Data                                                                    ####
@@ -83,30 +83,21 @@ logo_paths <- sapply(names(logo_urls), function(team) {
 #   ____________________________________________________________________________
 #   Plots                                                                   ####
 
-# Glickman model
-draws_glick <- fit_glick$draws(variables = "logStrength", format = "draws_df")
-td_glick <- tidybayes::gather_draws(draws_glick, logStrength[t, k]) %>%
-  mutate(method = "Glickman")
-
-# WBT Spike-Slab model
+# WBT Spike-Slab draws
 draws_spike <- fit_wbt_spike_slab$draws(variables = "logStrength", format = "draws_df")
-td_spike <- tidybayes::gather_draws(draws_spike, logStrength[t, k]) %>%
-  mutate(method = "Spike-Slab")
+td_spike <- tidybayes::gather_draws(draws_spike, logStrength[t, k])
 
-# Combine both
-td_combined <- bind_rows(td_glick, td_spike)
-
-summ_combined <- td_combined %>%
+summ <- td_spike %>%
   mutate(
     Team = factor(team_labels[k], levels = team_labels),
     Rank = as.integer(t)
   ) %>%
-  group_by(Team, Rank, method) %>%
+  group_by(Team, Rank) %>%
   median_qi(.value, .width = 0.95) %>%
   ungroup()
 
 # Add logo paths
-summ_combined <- summ_combined %>%
+summ <- summ %>%
   mutate(
     logo_path = logo_paths[as.character(Team)]
   )
@@ -119,7 +110,7 @@ season_labels <- paste0(substr(season_years, 3, 4), "/", substr(season_years + 1
 
 # Plot
 p_all_logos <- ggplot(
-  filter(summ_combined, method == "Spike-Slab"),
+  summ,
   aes(x = Rank, y = .value)
 ) +
   geom_ribbon(aes(ymin = .lower, ymax = .upper), fill = "grey20", alpha = 0.2) +
